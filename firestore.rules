@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User data: users can read/write their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Products: all authenticated users can read/write
+    match /products/{productId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Sales: all authenticated users can read/write
+    match /sales/{saleId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      // Only allow update/delete on the same day as saleDate
+      allow update, delete: if request.auth != null &&
+        resource.data.saleDate.toDate().day() == request.time.day() &&
+        resource.data.saleDate.toDate().month() == request.time.month() &&
+        resource.data.saleDate.toDate().year() == request.time.year();
+    }
+  }
+} 

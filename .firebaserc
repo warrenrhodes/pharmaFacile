@@ -1,0 +1,15 @@
+{
+    "projects": {
+        "default": "pharmafacile-c2820"
+    },
+    "targets": {
+        "pharmafacile-c2820": {
+            "hosting": {
+                "pharmaFacile": [
+                    "pharmafacile-dev"
+                ]
+            }
+        }
+    },
+    "etags": {}
+}
