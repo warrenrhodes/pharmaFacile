@@ -5,10 +5,16 @@ class AppConstants {
   static const double headerPadding = 50.0;
   static const double contentPadding = 16.0;
   static const double cardRadius = 28.0;
-  static const double iconSize = 32.0;
+  static const double iconSize = 25.0;
   static const double headerIconSize = 64.0;
   static const double cardIconSize = 80.0;
   static const double smallIconSize = 48.0;
+
+  static const double smallPadding = 8.0;
+  static const double largePadding = 24.0;
+  static const double borderRadius = 8.0;
+  static const double largeIconSize = 48.0;
+  static const int expiryDaysThreshold = 30;
 
   // Spacing
   static const double spacingXS = 4.0;
@@ -21,13 +27,13 @@ class AppConstants {
 
   // Breakpoints
   static const double mobileBreakpoint = 600.0;
-  static const double tabletBreakpoint = 700.0;
+  static const double tabletBreakpoint = 800.0;
+  static const double desktopBreakpoint = 1200.0;
 
   // Animation
   static const Duration animationDuration = Duration(milliseconds: 200);
 
   // Text
-  static const String appName = 'PharmaFacile';
   static const String appSubtitle = 'Gestion de Pharmacie';
   static const String userLabel = 'Connecté: Assistant';
   static const String lowStockAlertTitle = '⚠️ Attention - Stocks Faibles';
@@ -38,4 +44,19 @@ class AppConstants {
   static const String transactionsSuffix = ' transaction(s)';
   static const String productsRequireRestock =
       ' produit(s) nécessitent un réapprovisionnement';
+
+  static const String appName = 'PharmaTrack';
+  static const double sidebarWidth = 256.0;
+  static const double headerHeight = 64.0;
+}
+
+class DashboardItem {
+  static const dashboard = 'dashboard';
+  static const inventory = 'inventory';
+  static const products = 'products';
+  static const sales = 'sales';
+  static const reports = 'reports';
+  static const suppliers = 'suppliers';
+  static const users = 'users';
+  static const settings = 'settings';
 }

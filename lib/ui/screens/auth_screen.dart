@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
-import '../../providers/auth_provider.dart';
-
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
@@ -22,7 +20,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       final pin = _pinController.text.trim();
       if (pin.isNotEmpty) {
         await Future.delayed(const Duration(seconds: 1));
-        ref.read(authProvider.notifier).signIn();
+        // ref.read(authProvider.notifier).signIn();
       }
     }
   }
@@ -80,7 +78,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.25),
+                                    color: Colors.black.withValues(alpha: 0.25),
                                     blurRadius: 20,
                                     offset: const Offset(0, 10),
                                   ),
@@ -148,9 +146,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                             ShadInputFormField(
                               controller: _pinController,
                               placeholderAlignment: Alignment.centerLeft,
-                              placeholder: const Text(
-                                'Entrez votre code PIN',
-                              ),
+                              placeholder: const Text('Entrez votre code PIN'),
                               obscureText: !_showPin,
                               autofocus: true,
                               leading: const Padding(
@@ -221,8 +217,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           width: double.infinity,
                           height: 60,
                           backgroundColor: const Color(0xFF3B82F6), // blue-500
-                          hoverBackgroundColor:
-                              const Color(0xFF2563EB), // blue-600
+                          hoverBackgroundColor: const Color(
+                            0xFF2563EB,
+                          ), // blue-600
                           child: const Text(
                             '🔓 Se connecter',
                             style: TextStyle(

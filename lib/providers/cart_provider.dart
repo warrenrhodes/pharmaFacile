@@ -1,76 +1,77 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
 
-import '../models/product_model.dart';
-import '../models/sale_item_model.dart';
+import '../models/product.dart';
 
-class CartNotifier extends StateNotifier<List<SaleItem>> {
-  CartNotifier() : super([]);
+class CartProvider with ChangeNotifier {
+  final List<CartItem> _cart = [];
+  List<CartItem> get cart => _cart;
 
-  void addToCart(Product product, int quantity) {
-    final existingItemIndex = state.indexWhere(
-      (item) => item.productId == product.id,
+  double get cartTotal {
+    return _cart.fold(
+      0.0,
+      (sum, item) => sum + (item.product.price * item.quantity),
+    );
+  }
+
+  // Cart operations
+  void addToCart(Product product, {int quantity = 1}) {
+    final existingIndex = _cart.indexWhere(
+      (item) => item.product.id == product.id,
     );
 
-    if (existingItemIndex != -1) {
-      // Update existing item
-      final existingItem = state[existingItemIndex];
-      final newQuantity = existingItem.quantity + quantity;
-
-      if (newQuantity > product.stock) {
-        throw Exception('Stock insuffisant pour cette quantité totale');
+    if (existingIndex != -1) {
+      final existingItem = _cart[existingIndex];
+      if (existingItem.quantity + quantity <= product.quantity) {
+        _cart[existingIndex] = existingItem.copyWith(
+          quantity: existingItem.quantity + quantity,
+        );
       }
-
-      final updatedItem = existingItem.copyWith(
-        quantity: newQuantity,
-        total: newQuantity * product.sellingPrice,
-      );
-
-      state = [
-        ...state.sublist(0, existingItemIndex),
-        updatedItem,
-        ...state.sublist(existingItemIndex + 1),
-      ];
     } else {
-      // Add new item
-      final newItem = SaleItem(
-        productId: product.id,
-        productName: product.name,
-        quantity: quantity,
-        unitPrice: product.sellingPrice,
-        total: quantity * product.sellingPrice,
-      );
-
-      state = [...state, newItem];
+      if (quantity <= product.quantity) {
+        _cart.add(CartItem(product: product, quantity: quantity));
+      }
     }
+    notifyListeners();
+  }
+
+  void updateCartQuantity(String productId, int quantity) {
+    if (quantity <= 0) {
+      _cart.removeWhere((item) => item.product.id == productId);
+    } else {
+      final index = _cart.indexWhere((item) => item.product.id == productId);
+      if (index != -1) {
+        final product = _cart[index].product;
+        if (quantity <= product.quantity) {
+          _cart[index] = _cart[index].copyWith(quantity: quantity);
+        }
+      }
+    }
+    notifyListeners();
   }
 
   void removeFromCart(String productId) {
-    state = state.where((item) => item.productId != productId).toList();
+    _cart.removeWhere((item) => item.product.id == productId);
+    notifyListeners();
   }
 
   void clearCart() {
-    state = [];
-  }
-
-  double get totalAmount {
-    return state.fold(0.0, (sum, item) => sum + item.total);
-  }
-
-  int get itemCount {
-    return state.length;
+    _cart.clear();
+    notifyListeners();
   }
 }
 
-final cartProvider = StateNotifierProvider<CartNotifier, List<SaleItem>>(
-  (ref) => CartNotifier(),
-);
+class CartItem {
+  final Product product;
+  final int quantity;
 
-final cartTotalProvider = Provider<double>((ref) {
-  final cart = ref.watch(cartProvider);
-  return cart.fold(0.0, (sum, item) => sum + item.total);
-});
+  CartItem({required this.product, required this.quantity});
 
-final cartItemCountProvider = Provider<int>((ref) {
-  final cart = ref.watch(cartProvider);
-  return cart.length;
-});
+  CartItem copyWith({Product? product, int? quantity}) {
+    return CartItem(
+      product: product ?? this.product,
+      quantity: quantity ?? this.quantity,
+    );
+  }
+
+  double get total => product.price * quantity;
+}

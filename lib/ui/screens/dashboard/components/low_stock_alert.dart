@@ -1,101 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:pharmacie_stock/providers/app_provider.dart';
+import 'package:pharmacie_stock/utils/app_colors.dart';
+import 'package:provider/provider.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
-import '../../../../utils/app_colors.dart';
-import '../../../../utils/app_constants.dart';
-import '../utils.dart';
+import '../../../../utils/fake.dart';
+import 'alert_card.dart';
+import 'empty_state.dart';
+import 'product_item_card.dart';
 
+/// Widget that displays products with low stock levels.
 class LowStockAlert extends StatelessWidget {
-  final List<LowStockProduct> lowStockProducts;
-
-  const LowStockAlert({super.key, required this.lowStockProducts});
+  const LowStockAlert({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (lowStockProducts.isEmpty) return const SizedBox.shrink();
+    return Consumer<AppProvider>(
+      builder: (context, appProvider, child) {
+        final lowStockProducts = fakeProducts
+            .where((product) => product.quantity <= product.reorderThreshold)
+            .toList();
 
-    String formatLowStockProducts(
-      List<LowStockProduct> products, {
-      int maxItems = 3,
-    }) {
-      final displayProducts = products
-          .take(maxItems)
-          .map((p) => p.toString())
-          .join(', ');
-      return displayProducts + (products.length > maxItems ? '...' : '');
-    }
+        return AlertCard(
+          title: 'Low Stock Alert',
+          icon: LucideIcons.triangleAlert400,
+          iconColor: AppColors.red,
+          child: lowStockProducts.isEmpty
+              ? const EmptyState(
+                  icon: LucideIcons.package,
+                  message: 'All products are well stocked',
+                )
+              : Column(
+                  children: lowStockProducts.map((product) {
+                    final criticalityColor = _getCriticalityColor(
+                      product.quantity,
+                      product.reorderThreshold,
+                    );
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppConstants.spacingXXL),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: AppColors.warningGradient,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: const Border(
-          left: BorderSide(color: AppColors.warningBorder, width: 4),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.spacingXL),
-        child: Row(
-          children: [
-            Container(
-              width: AppConstants.smallIconSize,
-              height: AppConstants.smallIconSize,
-              decoration: BoxDecoration(
-                color: AppColors.warningIconBackground,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(
-                Icons.warning_amber_rounded,
-                color: AppColors.warningIcon,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: AppConstants.spacingL),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    AppConstants.lowStockAlertTitle,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.warningText,
-                    ),
-                  ),
-                  const SizedBox(height: AppConstants.spacingXS),
-                  Text(
-                    '${lowStockProducts.length}${AppConstants.productsRequireRestock}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: AppColors.warningTextAlt,
-                    ),
-                  ),
-                  const SizedBox(height: AppConstants.spacingXS),
-                  Text(
-                    formatLowStockProducts(lowStockProducts),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.warningIcon,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: ProductItemCard(
+                        productName: product.name,
+                        subtitle:
+                            'Reorder threshold: ${product.reorderThreshold}',
+                        badgeText: '${product.quantity} left',
+                        badgeColor: criticalityColor,
+                        additionalInfo:
+                            '\$${product.price.toStringAsFixed(2)}/unit',
+                      ),
+                    );
+                  }).toList(),
+                ),
+        );
+      },
     );
+  }
+
+  Color _getCriticalityColor(int quantity, int threshold) {
+    final ratio = quantity / threshold;
+    if (ratio <= 0.5) return AppColors.red;
+    if (ratio <= 0.8) return AppColors.orange500;
+    return AppColors.warningColor;
   }
 }
