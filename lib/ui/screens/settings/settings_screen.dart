@@ -577,10 +577,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         'Total Products',
                         inventory.products.length.toString(),
                       ),
-                      _buildInfoRow(
-                        'Total Users',
-                        auth.users.length.toString(),
-                      ),
+                      // _buildInfoRow(
+                      //   'Total Users',
+                      //   auth.users.length.toString(),
+                      // ),
                       _buildInfoRow(
                         'Total Suppliers',
                         inventory.suppliers.length.toString(),

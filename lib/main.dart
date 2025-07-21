@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:pharmacie_stock/config/internationalizations/internationalization.dart';
+import 'package:pharmacie_stock/database/database.dart';
 import 'package:pharmacie_stock/firebase/firebase_init.dart';
 import 'package:pharmacie_stock/providers/app_provider.dart';
 import 'package:pharmacie_stock/providers/cart_provider.dart';
+import 'package:pharmacie_stock/repositories/users.dart';
+import 'package:pharmacie_stock/ui/screens/auth/login/login_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -52,20 +55,26 @@ class MyApp extends StatelessWidget {
       return result;
     }
 
+    final Database database = Database.created(DatabaseType.appWriter);
+    final UserRepository userRepository = UserRepository(database);
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<Internationalization>(
           create: (_) => appInternationalization,
         ),
+        Provider<UserRepository>(create: (_) => userRepository),
         ChangeNotifierProvider<AppProvider>(create: (_) => AppProvider()),
-        ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
+        ChangeNotifierProvider<AuthProvider>(
+          create: (_) => AuthProvider(userRepository),
+        ),
         ChangeNotifierProvider<CartProvider>(create: (_) => CartProvider()),
         ChangeNotifierProvider<AppThemeProvider>(
           create: (_) => AppThemeProvider(),
         ),
       ],
-      child: Consumer2<Internationalization, AppThemeProvider>(
-        builder: (_, internationalization, themeProvider, __) {
+      child: Consumer3<Internationalization, AppThemeProvider, AuthProvider>(
+        builder: (_, internationalization, themeProvider, auth, __) {
           return ShadApp(
             title: 'PharmaFacile',
             themeMode: themeProvider.currentTheme,
@@ -84,7 +93,9 @@ class MyApp extends StatelessWidget {
                   systemLocales,
                   internationalization,
                 ),
-            home: const HomeScreen(),
+            home: auth.currentUser != null
+                ? const HomeScreen()
+                : const LoginScreen(),
           );
         },
       ),
